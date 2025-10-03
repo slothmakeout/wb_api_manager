@@ -5,20 +5,21 @@ logger = get_logger(__name__)
 
 
 class WbApi:
-    def __init__(self, api_key: str):
-        self.api_key = api_key
+    def __init__(self):
         self.base_url = "https://content-api-sandbox.wildberries.ru"
         self.content_url = f"{self.base_url}/content/v2"
-        self.headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        }
 
-    def validate_api_key(self) -> bool:
+    def validate_api_key(self, api_key: str) -> bool:
         try:
             ping_url = f"{self.base_url}/ping"
-            response = requests.get(ping_url, headers=self.headers)
-            logger.info(f"ping_url: {ping_url}, headers: {self.headers}")
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            }
+            response = requests.get(ping_url, headers=headers)
+            logger.info(
+                f"ping_url: {ping_url}, headers: {headers}, response: {response}"
+            )
             response.raise_for_status()
             return True
         except requests.exceptions.HTTPError as e:
@@ -32,14 +33,19 @@ class WbApi:
         except requests.exceptions.RequestException:
             raise
 
-    def get_card_list(self):
+    def get_card_list(self, api_key: str) -> list:
         try:
             card_list_url = f"{self.content_url}/get/cards/list"
             payload = {
                 "settings": {"cursor": {"limit": 100}, "filter": {"withPhoto": -1}}
             }
 
-            response = requests.post(card_list_url, headers=self.headers, json=payload)
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            }
+
+            response = requests.post(card_list_url, headers=headers, json=payload)
             response.raise_for_status()
             logger.debug(f"response status code: {response.status_code}")
 
@@ -48,7 +54,7 @@ class WbApi:
         except requests.exceptions.HTTPError as e:
             status_code = e.response.status_code
             if status_code == 401:
-                raise WBAPIError("Unathorized") from e
+                raise WBAPIError("Unauthorized") from e
             elif status_code == 429:
                 raise WBAPIError("Too many requests - rate limit exceeded") from e
             elif 400 <= status_code < 500:

@@ -17,7 +17,7 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     init_db(app)
 
-    wb_api = WbApi(api_key=app.config.get("WB_API_KEY"))
+    wb_api = WbApi()
 
     wb_account_repository = WbAccountsRepository(db)
     wb_account_service = WbAccountService(wb_api, wb_account_repository)

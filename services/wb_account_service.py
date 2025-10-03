@@ -15,7 +15,7 @@ class WbAccountService:
 
     def update_api_key(self, api_key: str) -> bool:
         logger.info(f"Updating API key for account, api_key: {api_key}")
-        is_valid = self.wb_api.validate_api_key()
+        is_valid = self.wb_api.validate_api_key(api_key)
         logger.info(f"is_valid: {is_valid}")
         if is_valid:
             # Достаём account_id из нашей сессии в браузере (пока что заглушка id=1)
